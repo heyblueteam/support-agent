@@ -1,9 +1,13 @@
 # Support Agent - Claude Code Instructions
 
-## Important Guidelines
 
-### Email Reply Protocol
-**NEVER send replies automatically without first showing the draft to the user for approval.**
+### Rules
+- **NEVER send replies automatically without first showing the draft to the user for approval.**
+- Do not be overly apologetic, focus on the issue and provide a solution
+- If required, read the documentation in the /website/content/en/docs folder to answer the question. This is one directory up from the current directory.
+
+
+## Email Reply Protocol
 
 When helping with email responses:
 1. First, analyze the thread/message to understand the context
@@ -12,15 +16,15 @@ When helping with email responses:
 4. Only send after explicit user approval
 5. Use the `reply-message` command only when the user confirms the draft
 
-### Reading and Analyzing Emails
+## Reading and Analyzing Emails
 - Use `read-threads` to get full context before drafting replies
 - Use `--output json` when processing for automated analysis
 - Check message dates to understand response urgency
 - Note if there are previous unanswered messages in the thread
 
-### Tool Usage Best Practices
+## Tool Usage Best Practices
 
-#### For Reading:
+### For Reading:
 ```bash
 # Get overview of recent messages
 ./support-agent read-messages --limit 10
@@ -32,7 +36,7 @@ When helping with email responses:
 ./support-agent search-messages --query "bug OR error OR problem"
 ```
 
-#### For Writing (ONLY after user approval):
+### For Writing (ONLY after user approval):
 ```bash
 # Reply to a message
 ./support-agent reply-message --message-id MSG_ID --body "Approved reply text"
@@ -44,7 +48,7 @@ When helping with email responses:
 ./support-agent label-message --message-id MSG_ID --add-label IMPORTANT
 ```
 
-### Workflow for Support Responses
+## Workflow for Support Responses
 
 1. **Identify the Issue**
    - Read the full thread for context
@@ -67,15 +71,15 @@ When helping with email responses:
    - Archive if issue is resolved
    - Document any bugs or feature requests found
 
-### Response Templates to Adapt
+## Response Templates to Adapt
 
 For bug reports:
 ```
 Hi [Name],
 
-Thank you for reporting this issue and for your patience. I apologize for the delayed response.
+Thank you for reporting this issue and for your patience. 
 
-I've reviewed your bug report about [specific issue]. [Acknowledge the problem and any provided details/screenshots].
+I've reviewed your bug report about [specific issue]. [Acknowledge the problem and any provided details].
 
 [Provide solution, workaround, or next steps]
 
@@ -89,7 +93,7 @@ For feature requests:
 ```
 Hi [Name],
 
-Thank you for reaching out and for your patience with our response.
+Thank you for reaching out!
 
 [Acknowledge their request and why it would be valuable]
 
@@ -101,22 +105,5 @@ Best regards,
 Team Blue
 ```
 
-### Important Reminders
-- Always check the date of the original message to acknowledge if response is delayed
-- Look for follow-up messages that indicate urgency or frustration
-- Never send automated responses without human review
-- Consider timezone differences when sending replies
-- Be extra careful with messages marked IMPORTANT or UNREAD
 
-### Testing vs Production
-When testing the tool:
-- Use `--limit 1` or `--limit 2` to avoid processing too many messages
-- Test with `--output detailed` first to understand the data
-- Always verify the correct message ID before replying
-- Consider using labels to mark test messages
 
-### Error Handling
-If you encounter errors:
-- Token issues: Delete `~/.support-agent/token.json` and re-authenticate
-- API errors: Check if Gmail API quota is exceeded
-- Connection issues: Verify internet connectivity and Gmail service status
