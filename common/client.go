@@ -74,6 +74,41 @@ func (c *GmailClient) SendMessage(message *gmail.Message) (*gmail.Message, error
 	return msg, nil
 }
 
+// CreateDraft creates a draft message
+func (c *GmailClient) CreateDraft(message *gmail.Message) (*gmail.Draft, error) {
+	draft := &gmail.Draft{
+		Message: message,
+	}
+
+	result, err := c.Service.Users.Drafts.Create(c.UserID, draft).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to create draft: %v", err)
+	}
+	return result, nil
+}
+
+// UpdateDraft updates an existing draft message
+func (c *GmailClient) UpdateDraft(draftID string, message *gmail.Message) (*gmail.Draft, error) {
+	draft := &gmail.Draft{
+		Message: message,
+	}
+
+	result, err := c.Service.Users.Drafts.Update(c.UserID, draftID, draft).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to update draft: %v", err)
+	}
+	return result, nil
+}
+
+// GetDraft retrieves a draft by ID
+func (c *GmailClient) GetDraft(draftID string) (*gmail.Draft, error) {
+	draft, err := c.Service.Users.Drafts.Get(c.UserID, draftID).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to get draft: %v", err)
+	}
+	return draft, nil
+}
+
 // ModifyMessage modifies labels on a message
 func (c *GmailClient) ModifyMessage(messageID string, addLabels, removeLabels []string) (*gmail.Message, error) {
 	modReq := &gmail.ModifyMessageRequest{

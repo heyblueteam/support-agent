@@ -32,6 +32,12 @@ func main() {
 	// Write operations
 	case "reply-message":
 		err = tools.RunReplyMessage(args)
+	case "draft-reply":
+		err = tools.RunDraftReply(args)
+	case "create-draft":
+		err = tools.RunCreateDraft(args)
+	case "update-draft":
+		err = tools.RunUpdateDraft(args)
 	case "archive-message":
 		err = tools.RunArchiveMessage(args)
 	case "label-message":
@@ -87,6 +93,21 @@ func printUsage() {
 	fmt.Println("    --body TEXT         Reply text (required)")
 	fmt.Println("    --thread-id ID      Thread ID (optional)")
 	fmt.Println()
+	fmt.Println("  draft-reply            Create and display a draft reply (without sending)")
+	fmt.Println("    --message-id ID     Original message ID (required)")
+	fmt.Println("    --body TEXT         Reply text (required)")
+	fmt.Println("    --thread-id ID      Thread ID (optional)")
+	fmt.Println()
+	fmt.Println("  create-draft           Create a Gmail draft message")
+	fmt.Println("    --message-id ID     Original message ID (required)")
+	fmt.Println("    --body TEXT         Reply text (required)")
+	fmt.Println("    --thread-id ID      Thread ID (optional)")
+	fmt.Println()
+	fmt.Println("  update-draft           Update an existing Gmail draft")
+	fmt.Println("    --draft-id ID       Draft ID to update (required)")
+	fmt.Println("    --body TEXT         New reply text (required)")
+	fmt.Println("    --subject TEXT      New subject (optional)")
+	fmt.Println()
 	fmt.Println("  archive-message        Archive messages or threads")
 	fmt.Println("    --message-id ID     Message to archive")
 	fmt.Println("    --thread-id ID      Thread to archive")
@@ -101,6 +122,9 @@ func printUsage() {
 	fmt.Println("  support-agent read-messages --unread --limit 5")
 	fmt.Println("  support-agent search-messages --query \"from:customer@example.com\"")
 	fmt.Println("  support-agent read-threads --thread-id THREAD_ID --output json")
+	fmt.Println("  support-agent draft-reply --message-id MSG_ID --body \"Thank you for contacting us\"")
+	fmt.Println("  support-agent create-draft --message-id MSG_ID --body \"Thank you for contacting us\"")
+	fmt.Println("  support-agent update-draft --draft-id DRAFT_ID --body \"Updated response\"")
 	fmt.Println("  support-agent reply-message --message-id MSG_ID --body \"Thank you for contacting us\"")
 	fmt.Println("  support-agent archive-message --thread-id THREAD_ID")
 	fmt.Println()
