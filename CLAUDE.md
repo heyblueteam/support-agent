@@ -4,7 +4,7 @@
 ### Rules
 - **NEVER send replies automatically without first showing the draft to the user for approval.**
 - Do not be overly apologetic, focus on the issue and provide a solution
-- If required, read the documentation in the /website/content/en/docs folder to answer the question. This is one directory up from the current directory.
+- When necessary, search within the `docs/` folder to find relevant documentation to answer questions received by email. Use Grep or Glob to search for keywords related to the customer's question.
 
 
 ## Email Reply Protocol
