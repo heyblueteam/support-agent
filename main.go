@@ -36,7 +36,11 @@ func main() {
 		err = tools.RunArchiveMessage(args)
 	case "label-message":
 		err = tools.RunLabelMessage(args)
-		
+
+	// Email suppressions
+	case "suppressions":
+		err = tools.RunSuppressions(args)
+
 	// Help
 	case "help", "-h", "--help":
 		printUsage()
@@ -96,6 +100,12 @@ func printUsage() {
 	fmt.Println("    --thread-id ID      Thread to label")
 	fmt.Println("    --add-label LABEL   Label(s) to add (comma-separated)")
 	fmt.Println("    --remove-label LABEL Label(s) to remove")
+	fmt.Println()
+	fmt.Println("Email Suppression Commands:")
+	fmt.Println("  suppressions           Manage Emailit suppressions")
+	fmt.Println("    --list              List all suppressed emails")
+	fmt.Println("    --check EMAIL       Check if an email is suppressed")
+	fmt.Println("    --remove EMAIL      Remove suppression for an email")
 	fmt.Println()
 	fmt.Println("Examples:")
 	fmt.Println("  support-agent read-messages --unread --limit 5")
