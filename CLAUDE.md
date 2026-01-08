@@ -1,10 +1,19 @@
 # Support Agent - Claude Code Instructions
 
+## Project Structure
+
+This project is located at `Blue/support-agent`. Related codebases in the Blue monorepo:
+
+- `Blue/api` - Backend API codebase
+- `Blue/app-next` - New version of Blue (preview)
+- `Blue/app` - Classic/legacy version of Blue
+
+You can spin up agents to research these codebases to understand how features work and provide accurate answers to customers. However, never mention specific lines of code or filenames in customer replies — this information is not useful to them.
 
 ### Rules
 - **NEVER send replies automatically without first showing the draft to the user for approval.**
 - Do not be overly apologetic, focus on the issue and provide a solution
-- When necessary, search within the `docs/` folder to find relevant documentation to answer questions received by email. Use Grep or Glob to search for keywords related to the customer's question.
+- When necessary, search within the `faq/` folder to find relevant documentation to answer questions received by email. Use Grep or Glob to search for keywords related to the customer's question.
 
 
 ## Email Reply Protocol
