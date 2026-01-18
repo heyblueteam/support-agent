@@ -41,6 +41,10 @@ func main() {
 	case "suppressions":
 		err = tools.RunSuppressions(args)
 
+	// Company access (support investigation)
+	case "company-access":
+		err = tools.RunCompanyAccess(args)
+
 	// Help
 	case "help", "-h", "--help":
 		printUsage()
@@ -107,12 +111,22 @@ func printUsage() {
 	fmt.Println("    --check EMAIL       Check if an email is suppressed")
 	fmt.Println("    --remove EMAIL      Remove suppression for an email")
 	fmt.Println()
+	fmt.Println("Company Access Commands (Support Investigation):")
+	fmt.Println("  company-access         Grant/remove owner access for support")
+	fmt.Println("    --company SLUG      Company slug or ID (required)")
+	fmt.Println("    --projects P1,P2    Comma-separated project slugs")
+	fmt.Println("    --remove            Remove access instead of granting")
+	fmt.Println("    --output FORMAT     Output format: detailed, json")
+	fmt.Println()
 	fmt.Println("Examples:")
 	fmt.Println("  support-agent read-messages --unread --limit 5")
 	fmt.Println("  support-agent search-messages --query \"from:customer@example.com\"")
 	fmt.Println("  support-agent read-threads --thread-id THREAD_ID --output json")
 	fmt.Println("  support-agent reply-message --message-id MSG_ID --body \"Thank you for contacting us\"")
 	fmt.Println("  support-agent archive-message --thread-id THREAD_ID")
+	fmt.Println("  support-agent company-access --company acme-corp")
+	fmt.Println("  support-agent company-access --company acme-corp --projects website,mobile-app")
+	fmt.Println("  support-agent company-access --company acme-corp --remove")
 	fmt.Println()
 	fmt.Println("Authentication:")
 	fmt.Println("  On first run, you'll be prompted to authenticate with Gmail.")
