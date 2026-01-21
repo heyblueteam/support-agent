@@ -30,6 +30,12 @@ When helping with email responses:
 - Use `--output json` when processing for automated analysis
 - Check message dates to understand response urgency
 - Note if there are previous unanswered messages in the thread
+- **Display emails in table format** when showing the user a list of messages:
+  ```
+  | # | From | Subject | Date |
+  |---|------|---------|------|
+  | 1 | Name (domain) | Subject line | Mon DD, HH:MM |
+  ```
 
 ## Tool Usage Best Practices
 
