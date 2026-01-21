@@ -2,6 +2,18 @@
 
 When customers report not receiving emails from Blue, their email may be suppressed due to previous delivery failures.
 
+## Blue's sending email addresses
+
+When asking customers to whitelist or check spam, reference these addresses:
+
+| Address | Purpose |
+|---------|---------|
+| `noreply@system.blue.cc` | Sign-in codes, invitations, company deletion, account changes |
+| `noreply@notify.blue.cc` | General notifications to users |
+| `notifications@messages.blue.cc` | Default outbound notifications |
+| `notifications@automations.blue.cc` | Emails sent via automation workflows |
+| `notifications@mail.process-system.app` | OTP codes for sign-in and verification |
+
 ## Check if an email is suppressed
 
 ```bash
