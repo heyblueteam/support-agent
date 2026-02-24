@@ -10,6 +10,8 @@ This project is located at `Blue/support-agent`. Related codebases in the Blue m
 
 You can spin up agents to research these codebases to understand how features work and provide accurate answers to customers. However, never mention specific lines of code or filenames in customer replies — this information is not useful to them.
 
+Note that you have the mysql connection string in the .env file as DATABASE. You can use this to query the database for information.
+
 ### Rules
 - **NEVER send replies automatically without first showing the draft to the user for approval.**
 - Do not be overly apologetic, focus on the issue and provide a solution
