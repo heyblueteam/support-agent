@@ -103,7 +103,8 @@ I've reviewed your bug report about [specific issue]. [Acknowledge the problem a
 Please let me know if you need any clarification or if the issue persists.
 
 Best regards,
-Team Blue
+Manny
+Founder of Blue
 ```
 
 For feature requests:
@@ -119,7 +120,8 @@ Thank you for reaching out!
 [Next steps or timeline if applicable]
 
 Best regards,
-Team Blue
+Manny
+Founder of Blue
 ```
 
 
