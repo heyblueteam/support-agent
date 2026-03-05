@@ -88,6 +88,15 @@ func (c *GmailClient) ModifyMessage(messageID string, addLabels, removeLabels []
 	return msg, nil
 }
 
+// GetAttachment retrieves an attachment by message ID and attachment ID
+func (c *GmailClient) GetAttachment(messageID, attachmentID string) (*gmail.MessagePartBody, error) {
+	attachment, err := c.Service.Users.Messages.Attachments.Get(c.UserID, messageID, attachmentID).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve attachment: %v", err)
+	}
+	return attachment, nil
+}
+
 // ModifyThread modifies labels on all messages in a thread
 func (c *GmailClient) ModifyThread(threadID string, addLabels, removeLabels []string) (*gmail.Thread, error) {
 	modReq := &gmail.ModifyThreadRequest{

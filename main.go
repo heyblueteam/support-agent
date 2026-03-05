@@ -26,6 +26,8 @@ func main() {
 		err = tools.RunReadThreads(args)
 	case "read-message-detail":
 		err = tools.RunReadMessageDetail(args)
+	case "download-attachment":
+		err = tools.RunDownloadAttachment(args)
 	case "search-messages":
 		err = tools.RunSearchMessages(args)
 		
@@ -83,6 +85,12 @@ func printUsage() {
 	fmt.Println("  read-message-detail    Get complete message with body")
 	fmt.Println("    --message-id ID     Message ID (required)")
 	fmt.Println("    --output FORMAT     Output format: simple, detailed, json")
+	fmt.Println()
+	fmt.Println("  download-attachment    Download attachments from a message")
+	fmt.Println("    --message-id ID     Message ID (required)")
+	fmt.Println("    --filename NAME     Specific attachment to download (downloads all if omitted)")
+	fmt.Println("    --output-dir DIR    Directory to save files (default: current directory)")
+	fmt.Println("    --list              List attachments without downloading")
 	fmt.Println()
 	fmt.Println("  search-messages        Search using Gmail query syntax")
 	fmt.Println("    --query QUERY       Search query (required)")

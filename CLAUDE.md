@@ -16,6 +16,7 @@ Note that you have the mysql connection string in the .env file as DATABASE. You
 - **NEVER send replies automatically without first showing the draft to the user for approval.**
 - Do not be overly apologetic, focus on the issue and provide a solution
 - When necessary, search within the `faq/` folder to find relevant documentation to answer questions received by email. Use Grep or Glob to search for keywords related to the customer's question.
+- **GitHub notification emails** (from `notifications@github.com`) should be archived immediately without reading or drafting a reply — they are automated and require no action.
 
 
 ## Email Reply Protocol
@@ -32,7 +33,7 @@ When helping with email responses:
 - Use `--output json` when processing for automated analysis
 - Check message dates to understand response urgency
 - Note if there are previous unanswered messages in the thread
-- **Display emails in table format** when showing the user a list of messages:
+- **Display emails in table format** when showing the user a list of messages. Group by `thread_id` — one row per thread, using the most recent message's sender, subject, and date. Never show the same thread twice:
   ```
   | # | From | Subject | Date |
   |---|------|---------|------|
