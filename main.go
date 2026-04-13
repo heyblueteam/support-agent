@@ -34,6 +34,8 @@ func main() {
 	// Write operations
 	case "reply-message":
 		err = tools.RunReplyMessage(args)
+	case "compose-message":
+		err = tools.RunComposeMessage(args)
 	case "archive-message":
 		err = tools.RunArchiveMessage(args)
 	case "label-message":
@@ -102,6 +104,18 @@ func printUsage() {
 	fmt.Println("    --message-id ID     Original message ID (required)")
 	fmt.Println("    --body TEXT         Reply text (required)")
 	fmt.Println("    --thread-id ID      Thread ID (optional)")
+	fmt.Println("    --to EMAIL          Override recipient (defaults to original sender)")
+	fmt.Println("    --cc EMAIL          Cc recipients (comma-separated)")
+	fmt.Println("    --bcc EMAIL         Bcc recipients (comma-separated)")
+	fmt.Println("    --attach PATH       File to attach (repeatable)")
+	fmt.Println()
+	fmt.Println("  compose-message        Start a new email thread")
+	fmt.Println("    --to EMAIL          Recipient (required)")
+	fmt.Println("    --subject TEXT      Subject line (required)")
+	fmt.Println("    --body TEXT         Message body (required)")
+	fmt.Println("    --cc EMAIL          Cc recipients (comma-separated)")
+	fmt.Println("    --bcc EMAIL         Bcc recipients (comma-separated)")
+	fmt.Println("    --attach PATH       File to attach (repeatable)")
 	fmt.Println()
 	fmt.Println("  archive-message        Archive messages or threads")
 	fmt.Println("    --message-id ID     Message to archive")
