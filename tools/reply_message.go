@@ -49,9 +49,12 @@ func RunReplyMessage(args []string) error {
 		tid = originalMsg.ThreadId
 	}
 
-	to := headers["from"]
+	to := defaultReplyRecipient(client, headers, tid)
 	if *toOverride != "" {
 		to = *toOverride
+	} else if to != headers["from"] {
+		fmt.Printf("Note: original message is from an internal address (%s); routing reply to %s (first external participant in thread). Use --to to override.\n",
+			headers["from"], to)
 	}
 
 	subject := headers["subject"]
@@ -96,10 +99,49 @@ func RunReplyMessage(args []string) error {
 	fmt.Printf("Message ID: %s\n", sentMsg.Id)
 	fmt.Printf("Thread ID: %s\n", sentMsg.ThreadId)
 	fmt.Printf("To: %s\n", to)
+	if *cc != "" {
+		fmt.Printf("Cc: %s\n", *cc)
+	}
+	if *bcc != "" {
+		fmt.Printf("Bcc: %s\n", *bcc)
+	}
 	fmt.Printf("Subject: %s\n", subject)
 	if len(attachments) > 0 {
 		fmt.Printf("Attachments: %d\n", len(attachments))
 	}
 
 	return nil
+}
+
+// defaultReplyRecipient resolves the default To: for a reply.
+//
+// Preference order:
+//  1. Reply-To header on the original message (standard RFC convention).
+//  2. From header on the original message, if external.
+//  3. First external From in the thread — so a reply to an internal
+//     handoff message (e.g. a teammate forwarded a support ticket back into
+//     the thread) still routes back to the customer.
+//
+// This avoids the footgun where Gmail's "reply-all logic" would otherwise
+// bounce the reply back to the last internal sender and the customer
+// never receives it.
+func defaultReplyRecipient(client *common.GmailClient, headers map[string]string, threadID string) string {
+	if rt := headers["reply-to"]; rt != "" && !common.IsInternalAddress(rt) {
+		return rt
+	}
+	if from := headers["from"]; from != "" && !common.IsInternalAddress(from) {
+		return from
+	}
+
+	thread, err := client.GetThread(threadID)
+	if err != nil || thread == nil {
+		return headers["from"]
+	}
+	for _, msg := range thread.Messages {
+		h := common.ExtractHeaders(msg)
+		if from := h["from"]; from != "" && !common.IsInternalAddress(from) {
+			return from
+		}
+	}
+	return headers["from"]
 }

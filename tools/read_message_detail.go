@@ -57,6 +57,9 @@ func RunReadMessageDetail(args []string) error {
 		ThreadID: msg.ThreadId,
 		From:     headers["from"],
 		To:       headers["to"],
+		Cc:       headers["cc"],
+		Bcc:      headers["bcc"],
+		ReplyTo:  headers["reply-to"],
 		Subject:  headers["subject"],
 		Date:     headers["date"],
 		Snippet:  msg.Snippet,
@@ -99,6 +102,15 @@ func RunReadMessageDetail(args []string) error {
 		fmt.Printf("Thread ID: %s\n", msgInfo.ThreadID)
 		fmt.Printf("From: %s\n", msgInfo.From)
 		fmt.Printf("To: %s\n", msgInfo.To)
+		if msgInfo.Cc != "" {
+			fmt.Printf("Cc: %s\n", msgInfo.Cc)
+		}
+		if msgInfo.Bcc != "" {
+			fmt.Printf("Bcc: %s\n", msgInfo.Bcc)
+		}
+		if msgInfo.ReplyTo != "" {
+			fmt.Printf("Reply-To: %s\n", msgInfo.ReplyTo)
+		}
 		fmt.Printf("Subject: %s\n", msgInfo.Subject)
 		fmt.Printf("Date: %s\n", msgInfo.Date)
 		fmt.Printf("Labels: %s\n", strings.Join(msgInfo.Labels, ", "))

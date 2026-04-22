@@ -139,18 +139,29 @@ func extractBody(part *gmail.MessagePart) string {
 	return ""
 }
 
+// InternalDomain is the email domain considered internal to Blue.
+// Addresses on this domain are treated as support/staff, not customers.
+const InternalDomain = "blue.cc"
+
 // ExtractHeaders extracts common headers from a message
 func ExtractHeaders(msg *gmail.Message) map[string]string {
 	headers := make(map[string]string)
-	
+
 	for _, header := range msg.Payload.Headers {
 		switch strings.ToLower(header.Name) {
-		case "from", "to", "subject", "date", "message-id", "in-reply-to", "references":
+		case "from", "to", "cc", "bcc", "reply-to", "delivered-to",
+			"subject", "date", "message-id", "in-reply-to", "references":
 			headers[strings.ToLower(header.Name)] = header.Value
 		}
 	}
-	
+
 	return headers
+}
+
+// IsInternalAddress reports whether an RFC 5322 address (e.g. "Name <x@blue.cc>")
+// belongs to the internal Blue domain.
+func IsInternalAddress(addr string) bool {
+	return strings.Contains(strings.ToLower(addr), "@"+InternalDomain)
 }
 
 // GetLabelNames returns human-readable label names

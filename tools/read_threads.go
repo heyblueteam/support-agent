@@ -84,6 +84,9 @@ func RunReadThreads(args []string) error {
 			ThreadID:  msg.ThreadId,
 			From:      headers["from"],
 			To:        headers["to"],
+			Cc:        headers["cc"],
+			Bcc:       headers["bcc"],
+			ReplyTo:   headers["reply-to"],
 			Subject:   headers["subject"],
 			Date:      headers["date"],
 			Snippet:   msg.Snippet,
@@ -131,6 +134,15 @@ func RunReadThreads(args []string) error {
 			fmt.Printf("ID: %s\n", msg.ID)
 			fmt.Printf("From: %s\n", msg.From)
 			fmt.Printf("To: %s\n", msg.To)
+			if msg.Cc != "" {
+				fmt.Printf("Cc: %s\n", msg.Cc)
+			}
+			if msg.Bcc != "" {
+				fmt.Printf("Bcc: %s\n", msg.Bcc)
+			}
+			if msg.ReplyTo != "" {
+				fmt.Printf("Reply-To: %s\n", msg.ReplyTo)
+			}
 			fmt.Printf("Date: %s\n", msg.Date)
 			fmt.Printf("Labels: %s\n", strings.Join(msg.Labels, ", "))
 			if msg.Body != "" {

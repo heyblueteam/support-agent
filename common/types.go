@@ -8,6 +8,9 @@ type MessageInfo struct {
 	ThreadID  string    `json:"thread_id"`
 	From      string    `json:"from"`
 	To        string    `json:"to"`
+	Cc        string    `json:"cc,omitempty"`
+	Bcc       string    `json:"bcc,omitempty"`
+	ReplyTo   string    `json:"reply_to,omitempty"`
 	Subject   string    `json:"subject"`
 	Date      string    `json:"date"`
 	Snippet   string    `json:"snippet,omitempty"`
