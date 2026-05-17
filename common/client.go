@@ -3,6 +3,8 @@ package common
 import (
 	"encoding/base64"
 	"fmt"
+	"html"
+	"regexp"
 	"strings"
 
 	"google.golang.org/api/gmail/v1"
@@ -111,32 +113,66 @@ func (c *GmailClient) ModifyThread(threadID string, addLabels, removeLabels []st
 	return thread, nil
 }
 
-// ExtractMessageBody extracts plain text body from a message
+// ExtractMessageBody extracts the message body, preferring text/plain and
+// falling back to text/html (tags stripped) when no plain-text part exists.
+// Many automated senders (e.g. the Blue feedback form) ship HTML-only email,
+// so a plain-text-only extractor returns an empty body for them.
 func ExtractMessageBody(msg *gmail.Message) string {
-	return extractBody(msg.Payload)
+	if body := extractBody(msg.Payload, "text/plain"); body != "" {
+		return body
+	}
+	if html := extractBody(msg.Payload, "text/html"); html != "" {
+		return htmlToText(html)
+	}
+	return ""
 }
 
-// extractBody recursively extracts text from message parts
-func extractBody(part *gmail.MessagePart) string {
-	// Check if this part has a body
-	if part.Body != nil && part.Body.Data != "" {
-		if part.MimeType == "text/plain" {
-			data, err := base64.URLEncoding.DecodeString(part.Body.Data)
-			if err != nil {
-				return ""
-			}
+// extractBody recursively extracts the decoded body of the first part matching
+// mimeType.
+func extractBody(part *gmail.MessagePart, mimeType string) string {
+	if part.Body != nil && part.Body.Data != "" && part.MimeType == mimeType {
+		if data, err := decodeBase64URL(part.Body.Data); err == nil {
 			return string(data)
 		}
 	}
 
-	// Recursively check parts
 	for _, p := range part.Parts {
-		if body := extractBody(p); body != "" {
+		if body := extractBody(p, mimeType); body != "" {
 			return body
 		}
 	}
 
 	return ""
+}
+
+// decodeBase64URL decodes Gmail body data, tolerating missing padding.
+func decodeBase64URL(s string) ([]byte, error) {
+	if data, err := base64.URLEncoding.DecodeString(s); err == nil {
+		return data, nil
+	}
+	return base64.RawURLEncoding.DecodeString(s)
+}
+
+// htmlToText reduces an HTML body to readable plain text: it drops script/style
+// blocks, turns block-level tags into newlines, strips remaining tags, and
+// unescapes HTML entities. Good enough for reading support email, not a full
+// HTML renderer.
+func htmlToText(s string) string {
+	reStyle := regexp.MustCompile(`(?is)<(script|style)[^>]*>.*?</(script|style)>`)
+	s = reStyle.ReplaceAllString(s, "")
+
+	reBreak := regexp.MustCompile(`(?i)<(br|/p|/div|/tr|/li|/h[1-6])\s*/?>`)
+	s = reBreak.ReplaceAllString(s, "\n")
+
+	reTag := regexp.MustCompile(`(?s)<[^>]+>`)
+	s = reTag.ReplaceAllString(s, "")
+
+	s = html.UnescapeString(s)
+
+	reBlankLines := regexp.MustCompile(`\n[ \t]*\n[ \t]*(\n[ \t]*)+`)
+	s = reBlankLines.ReplaceAllString(s, "\n\n")
+
+	return strings.TrimSpace(s)
 }
 
 // InternalDomain is the email domain considered internal to Blue.
