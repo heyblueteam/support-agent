@@ -8,11 +8,11 @@ When asking customers to whitelist or check spam, reference these addresses:
 
 | Address | Purpose |
 |---------|---------|
-| `noreply@system.blue.cc` | Sign-in codes, invitations, company deletion, account changes |
+| `noreply@system.blue.cc` | Sign-in codes, invitations, company deletion, account changes (blue.cc accounts) |
 | `noreply@notify.blue.cc` | General notifications to users |
 | `notifications@messages.blue.cc` | Default outbound notifications |
 | `notifications@automations.blue.cc` | Emails sent via automation workflows |
-| `notifications@mail.process-system.app` | OTP codes for sign-in and verification |
+| `notifications@mail.process-system.app` | **White-label only** — OTP/system emails for white-label tenants. Never used for `blue.cc` accounts (gated by `!isBlue` in `otpSender` strategy). Don't ask blue.cc customers to whitelist this. |
 
 ## Check if an email is suppressed
 
