@@ -208,3 +208,127 @@ func GetLabelNames(labelIDs []string) []string {
 	}
 	return names
 }
+
+// ListLabels returns all labels (system + user) in the mailbox.
+func (c *GmailClient) ListLabels() ([]*gmail.Label, error) {
+	resp, err := c.Service.Users.Labels.List(c.UserID).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to list labels: %v", err)
+	}
+	return resp.Labels, nil
+}
+
+// CreateLabel creates a new user label with sensible default visibility.
+func (c *GmailClient) CreateLabel(name string) (*gmail.Label, error) {
+	label := &gmail.Label{
+		Name:                  name,
+		LabelListVisibility:   "labelShow",
+		MessageListVisibility: "show",
+	}
+	created, err := c.Service.Users.Labels.Create(c.UserID, label).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to create label %q: %v", name, err)
+	}
+	return created, nil
+}
+
+// systemLabelIDs is the closed set of label names whose Gmail ID equals the
+// name itself. Anything else is a user label and must be resolved via
+// labels.list to get the opaque Label_NNN id required by the modify API.
+var systemLabelIDs = map[string]bool{
+	"INBOX":                 true,
+	"SENT":                  true,
+	"DRAFT":                 true,
+	"SPAM":                  true,
+	"TRASH":                 true,
+	"UNREAD":                true,
+	"STARRED":               true,
+	"IMPORTANT":             true,
+	"CHAT":                  true,
+	"CATEGORY_PERSONAL":     true,
+	"CATEGORY_SOCIAL":       true,
+	"CATEGORY_PROMOTIONS":   true,
+	"CATEGORY_UPDATES":      true,
+	"CATEGORY_FORUMS":       true,
+	"CATEGORY_RESERVATIONS": true,
+	"CATEGORY_PURCHASES":    true,
+}
+
+// ResolveLabelNames translates a list of label names or IDs into Gmail label
+// IDs suitable for the modify API. System labels pass through as-is. User
+// labels are looked up by case-insensitive exact name match. Inputs that
+// already look like a user label ID ("Label_…") pass through unchanged.
+// Unknown user labels error unless createIfMissing is true, in which case
+// they are created on the fly.
+func (c *GmailClient) ResolveLabelNames(names []string, createIfMissing bool) ([]string, error) {
+	if len(names) == 0 {
+		return nil, nil
+	}
+
+	// Lazy fetch of the label list; only needed for non-system inputs.
+	var labels []*gmail.Label
+	loadLabels := func() error {
+		if labels != nil {
+			return nil
+		}
+		ls, err := c.ListLabels()
+		if err != nil {
+			return err
+		}
+		labels = ls
+		return nil
+	}
+
+	resolved := make([]string, 0, len(names))
+	for _, raw := range names {
+		name := strings.TrimSpace(raw)
+		if name == "" {
+			continue
+		}
+
+		// Pass-through for system labels and raw user label IDs.
+		if systemLabelIDs[strings.ToUpper(name)] {
+			resolved = append(resolved, strings.ToUpper(name))
+			continue
+		}
+		if strings.HasPrefix(name, "Label_") {
+			resolved = append(resolved, name)
+			continue
+		}
+
+		if err := loadLabels(); err != nil {
+			return nil, err
+		}
+
+		var matchID string
+		for _, l := range labels {
+			if strings.EqualFold(l.Name, name) {
+				matchID = l.Id
+				break
+			}
+		}
+		if matchID != "" {
+			resolved = append(resolved, matchID)
+			continue
+		}
+
+		if !createIfMissing {
+			available := make([]string, 0, len(labels))
+			for _, l := range labels {
+				if l.Type == "user" {
+					available = append(available, l.Name)
+				}
+			}
+			return nil, fmt.Errorf("label %q not found (available user labels: %s) — pass --create-if-missing to create it", name, strings.Join(available, ", "))
+		}
+
+		created, err := c.CreateLabel(name)
+		if err != nil {
+			return nil, err
+		}
+		labels = append(labels, created)
+		resolved = append(resolved, created.Id)
+	}
+
+	return resolved, nil
+}

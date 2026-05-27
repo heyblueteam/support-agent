@@ -17,6 +17,7 @@ func RunLabelMessage(args []string) error {
 	threadID := fs.String("thread-id", "", "Thread ID to label (applies to all messages)")
 	addLabel := fs.String("add-label", "", "Label to add (e.g., IMPORTANT, STARRED, or custom)")
 	removeLabel := fs.String("remove-label", "", "Label to remove")
+	createIfMissing := fs.Bool("create-if-missing", false, "Create labels in --add-label that don't exist yet")
 	
 	// Parse args
 	if err := fs.Parse(args); err != nil {
@@ -43,23 +44,35 @@ func RunLabelMessage(args []string) error {
 		return fmt.Errorf("failed to create Gmail client: %v", err)
 	}
 
-	// Prepare label lists
-	var addLabels, removeLabels []string
-	
+	// Prepare label lists (parse comma-separated user input)
+	var addNames, removeNames []string
+
 	if *addLabel != "" {
-		// Split comma-separated labels
-		labels := strings.Split(*addLabel, ",")
-		for _, label := range labels {
-			addLabels = append(addLabels, strings.TrimSpace(label))
+		for _, label := range strings.Split(*addLabel, ",") {
+			if name := strings.TrimSpace(label); name != "" {
+				addNames = append(addNames, name)
+			}
 		}
 	}
-	
+
 	if *removeLabel != "" {
-		// Split comma-separated labels
-		labels := strings.Split(*removeLabel, ",")
-		for _, label := range labels {
-			removeLabels = append(removeLabels, strings.TrimSpace(label))
+		for _, label := range strings.Split(*removeLabel, ",") {
+			if name := strings.TrimSpace(label); name != "" {
+				removeNames = append(removeNames, name)
+			}
 		}
+	}
+
+	// Resolve label names → Gmail label IDs. The modify API rejects names for
+	// user labels; we look up the actual ID via labels.list. --create-if-missing
+	// only applies to add-label (creating a label just to remove it is silly).
+	addLabels, err := client.ResolveLabelNames(addNames, *createIfMissing)
+	if err != nil {
+		return fmt.Errorf("failed to resolve add-label: %v", err)
+	}
+	removeLabels, err := client.ResolveLabelNames(removeNames, false)
+	if err != nil {
+		return fmt.Errorf("failed to resolve remove-label: %v", err)
 	}
 
 	// Apply labels
@@ -72,11 +85,11 @@ func RunLabelMessage(args []string) error {
 		
 		fmt.Printf("Thread labels updated successfully!\n")
 		fmt.Printf("Thread ID: %s\n", thread.Id)
-		if len(addLabels) > 0 {
-			fmt.Printf("Added labels: %s\n", strings.Join(addLabels, ", "))
+		if len(addNames) > 0 {
+			fmt.Printf("Added labels: %s\n", strings.Join(addNames, ", "))
 		}
-		if len(removeLabels) > 0 {
-			fmt.Printf("Removed labels: %s\n", strings.Join(removeLabels, ", "))
+		if len(removeNames) > 0 {
+			fmt.Printf("Removed labels: %s\n", strings.Join(removeNames, ", "))
 		}
 		
 	} else {
@@ -88,11 +101,11 @@ func RunLabelMessage(args []string) error {
 		
 		fmt.Printf("Message labels updated successfully!\n")
 		fmt.Printf("Message ID: %s\n", msg.Id)
-		if len(addLabels) > 0 {
-			fmt.Printf("Added labels: %s\n", strings.Join(addLabels, ", "))
+		if len(addNames) > 0 {
+			fmt.Printf("Added labels: %s\n", strings.Join(addNames, ", "))
 		}
-		if len(removeLabels) > 0 {
-			fmt.Printf("Removed labels: %s\n", strings.Join(removeLabels, ", "))
+		if len(removeNames) > 0 {
+			fmt.Printf("Removed labels: %s\n", strings.Join(removeNames, ", "))
 		}
 		fmt.Printf("Current labels: %s\n", strings.Join(common.GetLabelNames(msg.LabelIds), ", "))
 	}

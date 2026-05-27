@@ -40,6 +40,10 @@ func main() {
 		err = tools.RunArchiveMessage(args)
 	case "label-message":
 		err = tools.RunLabelMessage(args)
+	case "list-labels":
+		err = tools.RunListLabels(args)
+	case "create-label":
+		err = tools.RunCreateLabel(args)
 
 	// Email suppressions
 	case "suppressions":
@@ -124,8 +128,16 @@ func printUsage() {
 	fmt.Println("  label-message          Add/remove labels")
 	fmt.Println("    --message-id ID     Message to label")
 	fmt.Println("    --thread-id ID      Thread to label")
-	fmt.Println("    --add-label LABEL   Label(s) to add (comma-separated)")
-	fmt.Println("    --remove-label LABEL Label(s) to remove")
+	fmt.Println("    --add-label LABEL   Label(s) to add (comma-separated, name or ID)")
+	fmt.Println("    --remove-label LABEL Label(s) to remove (comma-separated, name or ID)")
+	fmt.Println("    --create-if-missing Create labels in --add-label that don't exist yet")
+	fmt.Println()
+	fmt.Println("  list-labels            List all Gmail labels (system + user)")
+	fmt.Println("    --user-only         Only show user-created labels")
+	fmt.Println("    --output FORMAT     Output format: simple, detailed, json")
+	fmt.Println()
+	fmt.Println("  create-label           Create a new user label")
+	fmt.Println("    --name TEXT         Label name (required, e.g. \"Follow-up\")")
 	fmt.Println()
 	fmt.Println("Email Suppression Commands:")
 	fmt.Println("  suppressions           Manage Emailit suppressions")
