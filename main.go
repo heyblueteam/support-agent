@@ -45,10 +45,6 @@ func main() {
 	case "create-label":
 		err = tools.RunCreateLabel(args)
 
-	// Email suppressions
-	case "suppressions":
-		err = tools.RunSuppressions(args)
-
 	// Company access (support investigation)
 	case "company-access":
 		err = tools.RunCompanyAccess(args)
@@ -138,12 +134,6 @@ func printUsage() {
 	fmt.Println()
 	fmt.Println("  create-label           Create a new user label")
 	fmt.Println("    --name TEXT         Label name (required, e.g. \"Follow-up\")")
-	fmt.Println()
-	fmt.Println("Email Suppression Commands:")
-	fmt.Println("  suppressions           Manage Emailit suppressions")
-	fmt.Println("    --list              List all suppressed emails")
-	fmt.Println("    --check EMAIL       Check if an email is suppressed")
-	fmt.Println("    --remove EMAIL      Remove suppression for an email")
 	fmt.Println()
 	fmt.Println("Company Access Commands (Support Investigation):")
 	fmt.Println("  company-access         Grant/remove owner access for support")
