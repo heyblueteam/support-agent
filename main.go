@@ -34,6 +34,8 @@ func main() {
 	// Write operations
 	case "reply-message":
 		err = tools.RunReplyMessage(args)
+	case "draft-reply":
+		err = tools.RunDraftReply(args)
 	case "compose-message":
 		err = tools.RunComposeMessage(args)
 	case "archive-message":
@@ -101,6 +103,15 @@ func printUsage() {
 	fmt.Println()
 	fmt.Println("Write Commands:")
 	fmt.Println("  reply-message          Send a reply to a message")
+	fmt.Println("    --message-id ID     Original message ID (required)")
+	fmt.Println("    --body TEXT         Reply text (required)")
+	fmt.Println("    --thread-id ID      Thread ID (optional)")
+	fmt.Println("    --to EMAIL          Override recipient (defaults to original sender)")
+	fmt.Println("    --cc EMAIL          Cc recipients (comma-separated)")
+	fmt.Println("    --bcc EMAIL         Bcc recipients (comma-separated)")
+	fmt.Println("    --attach PATH       File to attach (repeatable)")
+	fmt.Println()
+	fmt.Println("  draft-reply            Create a draft reply in Gmail (does NOT send)")
 	fmt.Println("    --message-id ID     Original message ID (required)")
 	fmt.Println("    --body TEXT         Reply text (required)")
 	fmt.Println("    --thread-id ID      Thread ID (optional)")
