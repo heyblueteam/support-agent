@@ -76,6 +76,18 @@ func (c *GmailClient) SendMessage(message *gmail.Message) (*gmail.Message, error
 	return msg, nil
 }
 
+// CreateDraft creates a Gmail draft — it does NOT send. The draft lands in the
+// mailbox's Drafts, threaded via message.ThreadId, for a human to review and
+// send. This is the only outbound-write primitive the unattended triage job is
+// permitted to use; the Send button stays the human gate.
+func (c *GmailClient) CreateDraft(message *gmail.Message) (*gmail.Draft, error) {
+	draft, err := c.Service.Users.Drafts.Create(c.UserID, &gmail.Draft{Message: message}).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to create draft: %v", err)
+	}
+	return draft, nil
+}
+
 // ModifyMessage modifies labels on a message
 func (c *GmailClient) ModifyMessage(messageID string, addLabels, removeLabels []string) (*gmail.Message, error) {
 	modReq := &gmail.ModifyMessageRequest{
