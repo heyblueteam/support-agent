@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"html"
+	"net/mail"
 	"regexp"
 	"strings"
 
@@ -191,6 +192,19 @@ func htmlToText(s string) string {
 // Addresses on this domain are treated as support/staff, not customers.
 const InternalDomain = "blue.cc"
 
+// InternalDomains are every domain we send support mail from. Support moved to
+// blue.app while blue.cc stayed live, so a check that knows only one of them
+// fails to recognise half our own replies.
+//
+// Subdomains are deliberately NOT included. The in-app Feedback Form bot sends
+// from notifications@automations.blue.cc and is customer mail wearing a bot
+// address — treating it as internal would make replies fall through to the
+// wrong recipient.
+var InternalDomains = map[string]bool{
+	"blue.cc":  true,
+	"blue.app": true,
+}
+
 // ExtractHeaders extracts common headers from a message
 func ExtractHeaders(msg *gmail.Message) map[string]string {
 	headers := make(map[string]string)
@@ -208,8 +222,32 @@ func ExtractHeaders(msg *gmail.Message) map[string]string {
 
 // IsInternalAddress reports whether an RFC 5322 address (e.g. "Name <x@blue.cc>")
 // belongs to the internal Blue domain.
+// Matches on the parsed domain, never as a substring: "@blue.cc" appearing
+// anywhere in a header is not the same claim as the address actually being on
+// that domain, and the difference decides who a reply is addressed to.
 func IsInternalAddress(addr string) bool {
-	return strings.Contains(strings.ToLower(addr), "@"+InternalDomain)
+	domain := addressDomain(addr)
+	return domain != "" && InternalDomains[domain]
+}
+
+// addressDomain returns the lowercased domain of an RFC 5322 address, falling
+// back to the text after the last "@" when the header will not parse.
+func addressDomain(addr string) string {
+	addr = strings.TrimSpace(addr)
+	if addr == "" {
+		return ""
+	}
+
+	candidate := addr
+	if parsed, err := mail.ParseAddress(addr); err == nil {
+		candidate = parsed.Address
+	}
+
+	at := strings.LastIndex(candidate, "@")
+	if at < 0 {
+		return ""
+	}
+	return strings.ToLower(strings.Trim(strings.TrimSpace(candidate[at+1:]), "<>"))
 }
 
 // GetLabelNames returns human-readable label names
