@@ -198,6 +198,70 @@ func (c *GmailClient) CreateDraft(message *gmail.Message) (*gmail.Draft, error) 
 	return draft, nil
 }
 
+// ListDrafts returns every draft with its message payload, following
+// pagination. A draft's own id is not its message id, and only the draft id can
+// send or delete it — which is why callers cannot work from a DRAFT-labelled
+// message search alone.
+func (c *GmailClient) ListDrafts(maxResults int64) ([]*gmail.Draft, error) {
+	var out []*gmail.Draft
+	pageToken := ""
+
+	for {
+		call := c.Service.Users.Drafts.List(c.UserID).MaxResults(500)
+		if pageToken != "" {
+			call.PageToken(pageToken)
+		}
+
+		resp, err := call.Do()
+		if err != nil {
+			return nil, fmt.Errorf("unable to list drafts: %v", err)
+		}
+
+		out = append(out, resp.Drafts...)
+		if maxResults > 0 && int64(len(out)) >= maxResults {
+			return out[:maxResults], nil
+		}
+
+		pageToken = resp.NextPageToken
+		if pageToken == "" || len(resp.Drafts) == 0 {
+			break
+		}
+	}
+
+	return out, nil
+}
+
+// GetDraft retrieves a draft, including its full message body.
+func (c *GmailClient) GetDraft(draftID string) (*gmail.Draft, error) {
+	draft, err := c.Service.Users.Drafts.Get(c.UserID, draftID).Format("full").Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to retrieve draft %s: %v", draftID, err)
+	}
+	return draft, nil
+}
+
+// SendDraft sends an existing draft as-is.
+//
+// Re-sending the text through reply-message would deliver the same words but
+// leave the original draft sitting in the mailbox, so the next triage run sees
+// a pending draft on a thread that has already been answered. Sending the draft
+// itself removes it from Drafts as part of the send.
+func (c *GmailClient) SendDraft(draftID string) (*gmail.Message, error) {
+	msg, err := c.Service.Users.Drafts.Send(c.UserID, &gmail.Draft{Id: draftID}).Do()
+	if err != nil {
+		return nil, fmt.Errorf("unable to send draft %s: %v", draftID, err)
+	}
+	return msg, nil
+}
+
+// DeleteDraft discards a draft without sending it.
+func (c *GmailClient) DeleteDraft(draftID string) error {
+	if err := c.Service.Users.Drafts.Delete(c.UserID, draftID).Do(); err != nil {
+		return fmt.Errorf("unable to delete draft %s: %v", draftID, err)
+	}
+	return nil
+}
+
 // ModifyMessage modifies labels on a message
 func (c *GmailClient) ModifyMessage(messageID string, addLabels, removeLabels []string) (*gmail.Message, error) {
 	modReq := &gmail.ModifyMessageRequest{

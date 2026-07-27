@@ -32,6 +32,12 @@ func main() {
 		err = tools.RunSearchMessages(args)
 	case "triage-threads":
 		err = tools.RunTriageThreads(args)
+	case "list-drafts":
+		err = tools.RunListDrafts(args)
+	case "send-draft":
+		err = tools.RunSendDraft(args)
+	case "delete-draft":
+		err = tools.RunDeleteDraft(args)
 
 	// Write operations
 	case "reply-message":
