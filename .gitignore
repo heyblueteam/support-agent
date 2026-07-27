@@ -2,3 +2,12 @@ gmail.json
 support-agent
 .DS_Store
 .env
+
+# Per-run support artifacts. These hold customer names, email addresses and
+# account state, so they stay on the machine that produced them and out of the
+# history. Nothing reads them across machines: the triage ledgers only need to
+# survive between runs on the same box, and pending SQL is written for a human
+# to run once and discard.
+triage/
+triage-log.md
+pending-sql/
