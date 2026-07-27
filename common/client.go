@@ -2,13 +2,16 @@ package common
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"html"
 	"net/mail"
 	"regexp"
 	"strings"
+	"time"
 
 	"google.golang.org/api/gmail/v1"
+	"google.golang.org/api/googleapi"
 )
 
 // GmailClient wraps the Gmail service with helper methods
@@ -66,6 +69,112 @@ func (c *GmailClient) GetThread(threadID string) (*gmail.Thread, error) {
 		return nil, fmt.Errorf("unable to retrieve thread: %v", err)
 	}
 	return thread, nil
+}
+
+// ListThreads lists threads matching a query, following pagination until
+// maxResults is satisfied or Gmail runs out of pages.
+//
+// Gmail caps MaxResults at 500 per page and signals more results only through
+// NextPageToken, so a single un-paginated call truncates a larger mailbox
+// silently — no error, just a short list. A triage run that claims to give every
+// thread a disposition is only telling the truth if it follows the token.
+// Pass maxResults <= 0 for "every matching thread".
+func (c *GmailClient) ListThreads(query string, maxResults int64) ([]*gmail.Thread, error) {
+	const pageCap = 500
+
+	var out []*gmail.Thread
+	pageToken := ""
+
+	for {
+		want := int64(pageCap)
+		if maxResults > 0 {
+			remaining := maxResults - int64(len(out))
+			if remaining <= 0 {
+				break
+			}
+			if remaining < want {
+				want = remaining
+			}
+		}
+
+		call := c.Service.Users.Threads.List(c.UserID).MaxResults(want)
+		if query != "" {
+			call.Q(query)
+		}
+		if pageToken != "" {
+			call.PageToken(pageToken)
+		}
+
+		resp, err := call.Do()
+		if err != nil {
+			return nil, fmt.Errorf("unable to list threads: %v", err)
+		}
+
+		out = append(out, resp.Threads...)
+
+		pageToken = resp.NextPageToken
+		if pageToken == "" || len(resp.Threads) == 0 {
+			break
+		}
+	}
+
+	return out, nil
+}
+
+// GetThreadWithRetry retrieves a thread, backing off on the throttling and
+// transient server errors Gmail returns once requests run concurrently.
+func (c *GmailClient) GetThreadWithRetry(threadID string, attempts int) (*gmail.Thread, error) {
+	if attempts < 1 {
+		attempts = 1
+	}
+
+	var lastErr error
+	delay := 250 * time.Millisecond
+
+	for i := 0; i < attempts; i++ {
+		thread, err := c.Service.Users.Threads.Get(c.UserID, threadID).Do()
+		if err == nil {
+			return thread, nil
+		}
+
+		lastErr = err
+		if !isRetryableAPIError(err) {
+			break
+		}
+		if i < attempts-1 {
+			time.Sleep(delay)
+			delay *= 2
+		}
+	}
+
+	return nil, fmt.Errorf("unable to retrieve thread %s: %v", threadID, lastErr)
+}
+
+// isRetryableAPIError reports whether an error is worth another attempt.
+//
+// Gmail reports throttling as 403 with a rate-limit reason, sharing that status
+// with genuine permission failures — so the reason has to be read. Retrying a
+// real 403 just burns the quota that caused it.
+func isRetryableAPIError(err error) bool {
+	var apiErr *googleapi.Error
+	if !errors.As(err, &apiErr) {
+		return false
+	}
+
+	if apiErr.Code == 429 || apiErr.Code >= 500 {
+		return true
+	}
+
+	if apiErr.Code == 403 {
+		for _, e := range apiErr.Errors {
+			// Covers both rateLimitExceeded and userRateLimitExceeded.
+			if strings.Contains(e.Reason, "ateLimitExceeded") {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // SendMessage sends an email message
@@ -222,6 +331,8 @@ func ExtractHeaders(msg *gmail.Message) map[string]string {
 
 // IsInternalAddress reports whether an RFC 5322 address (e.g. "Name <x@blue.cc>")
 // belongs to the internal Blue domain.
+// is one of ours.
+//
 // Matches on the parsed domain, never as a substring: "@blue.cc" appearing
 // anywhere in a header is not the same claim as the address actually being on
 // that domain, and the difference decides who a reply is addressed to.

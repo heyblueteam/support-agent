@@ -30,7 +30,9 @@ func main() {
 		err = tools.RunDownloadAttachment(args)
 	case "search-messages":
 		err = tools.RunSearchMessages(args)
-		
+	case "triage-threads":
+		err = tools.RunTriageThreads(args)
+
 	// Write operations
 	case "reply-message":
 		err = tools.RunReplyMessage(args)
@@ -100,6 +102,14 @@ func printUsage() {
 	fmt.Println("    --query QUERY       Search query (required)")
 	fmt.Println("    --limit N           Max results (default: 20)")
 	fmt.Println("    --output FORMAT     Output format: simple, detailed, json")
+	fmt.Println()
+	fmt.Println("  triage-threads         Whole threads for a query, with triage state")
+	fmt.Println("    --query QUERY       Gmail query (default: in:inbox)")
+	fmt.Println("    --limit N           Max threads (0 = all, follows pagination)")
+	fmt.Println("    --concurrency N     Parallel fetches (default: 8)")
+	fmt.Println("    --needs-work        Only threads still needing a reply")
+	fmt.Println("    --bodies            Include full message bodies")
+	fmt.Println("    --output FORMAT     Output format: simple, json")
 	fmt.Println()
 	fmt.Println("Write Commands:")
 	fmt.Println("  reply-message          Send a reply to a message")
