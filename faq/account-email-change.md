@@ -97,7 +97,7 @@ they differ, login will fail — fix before replying.
 - **Both sides or neither.** A half-applied change locks the user out worse than
   before. Verify Step 4 before sending the reply.
 - **OTP is passwordless.** The customer doesn't need a password — once the email
-  is correct on both sides they sign in at `blue.cc/sign-in` via the one-time
+  is correct on both sides they sign in at `blue.app/sign-in` via the one-time
   code. Only use `reset-customer-password` if they specifically want a password.
 - **Banned accounts:** refuse and route to `ban-customer` instead.
 
@@ -114,7 +114,7 @@ the lapsed domain is no longer in the way. Your workspace, license, and all your
 data are untouched.
 
 To get back in:
-1. Go to https://blue.cc/sign-in
+1. Go to https://blue.app/sign-in
 2. Enter [new-email]
 3. You'll receive a one-time login code at this address — enter it and you're in
 
