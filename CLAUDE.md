@@ -10,11 +10,36 @@ This project is located at `Blue/support-agent`. Related codebases in the Blue m
 
 You can spin up agents to research these codebases to understand how features work and provide accurate answers to customers. However, never mention specific lines of code or filenames in customer replies — this information is not useful to them.
 
-Note that you have the mysql connection string in the .env file as DATABASE. You can use this to query the database for information.
+Note that you have the instructions on how to query the database in the /blue/docs/infra.md documentation. You can use this to query the database for information.
+
+## Workflow for Support Responses
+
+1. **Identify the Issue**
+   - Read the full thread for context
+   - Check if customer has sent follow-ups
+   - Note any screenshots or links provided
+
+2. **Draft Response**
+   - Address the specific problem
+   - Acknowledge any delays in response
+   - Provide clear next steps or solutions
+   - Be professional and empathetic
+
+3. **Get Approval**
+   - Present the draft to the user
+   - Make any requested changes
+   - Confirm before sending
+
+4. **Post-Send Actions**
+   - Consider labeling for follow-up if needed
+   - Archive if issue is resolved
+   - Document any bugs or feature requests found
+   - Consider if we improve FAQ, support tools, based on what happened.
 
 ### Rules
 - **NEVER send replies automatically without first showing the draft to the user for approval.**
 - Do not be overly apologetic, focus on the issue and provide a solution
+- **Never promise a follow-up.** Manny does not proactively follow up on tickets, and there is no system tracking who is owed an "it's deployed now" note — so promising one creates a debt that never gets paid. Don't write "I'll let you know when this ships", "I'll let you know once it's deployed", "I'll check back", "I'll drop you a note", or any variant. When a fix is on the way, say it is **coming soon** and stop — the customer does not need a deploy notification. State the resolution or current status and end there.
 - When necessary, search within the `faq/` folder to find relevant documentation to answer questions received by email. Use Grep or Glob to search for keywords related to the customer's question.
 - **GitHub notification emails** (from `notifications@github.com`) should be archived immediately without reading or drafting a reply — they are automated and require no action.
 
@@ -66,28 +91,7 @@ When helping with email responses:
 ./support-agent label-message --message-id MSG_ID --add-label IMPORTANT
 ```
 
-## Workflow for Support Responses
 
-1. **Identify the Issue**
-   - Read the full thread for context
-   - Check if customer has sent follow-ups
-   - Note any screenshots or links provided
-
-2. **Draft Response**
-   - Address the specific problem
-   - Acknowledge any delays in response
-   - Provide clear next steps or solutions
-   - Be professional and empathetic
-
-3. **Get Approval**
-   - Present the draft to the user
-   - Make any requested changes
-   - Confirm before sending
-
-4. **Post-Send Actions**
-   - Consider labeling for follow-up if needed
-   - Archive if issue is resolved
-   - Document any bugs or feature requests found
 
 ## Response Templates to Adapt
 
