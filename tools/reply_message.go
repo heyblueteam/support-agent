@@ -14,7 +14,8 @@ func RunReplyMessage(args []string) error {
 	fs := flag.NewFlagSet("reply-message", flag.ExitOnError)
 
 	messageID := fs.String("message-id", "", "Message ID to reply to (required)")
-	body := fs.String("body", "", "Reply body text (required)")
+	body := fs.String("body", "", "Reply body text (single-line or already-expanded text)")
+	bodyFile := fs.String("body-file", "", "Read reply body from a file (recommended for multiline text)")
 	threadID := fs.String("thread-id", "", "Thread ID (optional, will be fetched if not provided)")
 	toOverride := fs.String("to", "", "Override recipient — defaults to the original sender. Use when the thread was started by a no-reply bot and you want to route the reply to the real customer.")
 	cc := fs.String("cc", "", "Cc recipients (comma-separated)")
@@ -26,10 +27,14 @@ func RunReplyMessage(args []string) error {
 		return err
 	}
 
-	if *messageID == "" || *body == "" {
+	if *messageID == "" {
 		fmt.Println("Error: message-id and body are required")
-		fmt.Println("\nUsage: reply-message --message-id MESSAGE_ID --body \"Reply text\" [--to EMAIL] [--cc EMAIL] [--bcc EMAIL] [--attach PATH ...] [--thread-id THREAD_ID]")
+		fmt.Println("\nUsage: reply-message --message-id MESSAGE_ID (--body \"Reply text\" | --body-file PATH) [--to EMAIL] [--cc EMAIL] [--bcc EMAIL] [--attach PATH ...] [--thread-id THREAD_ID]")
 		return fmt.Errorf("message-id and body are required")
+	}
+	bodyText, err := resolveBody(*body, *bodyFile)
+	if err != nil {
+		return err
 	}
 
 	client, err := common.NewGmailClient()
@@ -76,7 +81,7 @@ func RunReplyMessage(args []string) error {
 		Cc:          *cc,
 		Bcc:         *bcc,
 		Subject:     subject,
-		Body:        *body,
+		Body:        bodyText,
 		InReplyTo:   originalMessageID,
 		References:  references,
 		Attachments: attachments,

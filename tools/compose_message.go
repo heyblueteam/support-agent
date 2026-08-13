@@ -15,6 +15,7 @@ func RunComposeMessage(args []string) error {
 	to := fs.String("to", "", "Recipient email (required)")
 	subject := fs.String("subject", "", "Subject line (required)")
 	body := fs.String("body", "", "Message body (required)")
+	bodyFile := fs.String("body-file", "", "Read message body from a file (recommended for multiline text)")
 	cc := fs.String("cc", "", "Cc recipients (comma-separated)")
 	bcc := fs.String("bcc", "", "Bcc recipients (comma-separated)")
 	var attachments StringSliceFlag
@@ -24,10 +25,14 @@ func RunComposeMessage(args []string) error {
 		return err
 	}
 
-	if *to == "" || *subject == "" || *body == "" {
+	if *to == "" || *subject == "" {
 		fmt.Println("Error: to, subject and body are required")
-		fmt.Println("\nUsage: compose-message --to EMAIL --subject \"Subject\" --body \"Body\" [--cc EMAIL] [--bcc EMAIL] [--attach PATH ...]")
+		fmt.Println("\nUsage: compose-message --to EMAIL --subject \"Subject\" (--body \"Body\" | --body-file PATH) [--cc EMAIL] [--bcc EMAIL] [--attach PATH ...]")
 		return fmt.Errorf("to, subject and body are required")
+	}
+	bodyText, err := resolveBody(*body, *bodyFile)
+	if err != nil {
+		return err
 	}
 
 	client, err := common.NewGmailClient()
@@ -41,7 +46,7 @@ func RunComposeMessage(args []string) error {
 		Cc:          *cc,
 		Bcc:         *bcc,
 		Subject:     *subject,
-		Body:        *body,
+		Body:        bodyText,
 		Attachments: attachments,
 	}
 

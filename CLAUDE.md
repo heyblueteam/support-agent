@@ -53,6 +53,9 @@ When helping with email responses:
 4. Only send after explicit user approval
 5. Use the `reply-message` command only when the user confirms the draft
 
+For multiline email bodies, use `--body-file`. Do not pass JSON-escaped text
+to `--body`; the CLI rejects literal `\\n` and `\\r` sequences before Gmail.
+
 ## Reading and Analyzing Emails
 - Use `read-threads` to get full context before drafting replies
 - Use `--output json` when processing for automated analysis
@@ -128,6 +131,5 @@ Best regards,
 Manny
 Founder of Blue
 ```
-
 
 

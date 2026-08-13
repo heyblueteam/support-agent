@@ -63,7 +63,7 @@ func main() {
 	case "help", "-h", "--help":
 		printUsage()
 		os.Exit(0)
-		
+
 	default:
 		fmt.Printf("Unknown command: %s\n\n", command)
 		printUsage()
@@ -120,7 +120,8 @@ func printUsage() {
 	fmt.Println("Write Commands:")
 	fmt.Println("  reply-message          Send a reply to a message")
 	fmt.Println("    --message-id ID     Original message ID (required)")
-	fmt.Println("    --body TEXT         Reply text (required)")
+	fmt.Println("    --body TEXT         Reply text")
+	fmt.Println("    --body-file PATH    Read reply text from a file (recommended for multiline text)")
 	fmt.Println("    --thread-id ID      Thread ID (optional)")
 	fmt.Println("    --to EMAIL          Override recipient (defaults to original sender)")
 	fmt.Println("    --cc EMAIL          Cc recipients (comma-separated)")
@@ -129,7 +130,8 @@ func printUsage() {
 	fmt.Println()
 	fmt.Println("  draft-reply            Create a draft reply in Gmail (does NOT send)")
 	fmt.Println("    --message-id ID     Original message ID (required)")
-	fmt.Println("    --body TEXT         Reply text (required)")
+	fmt.Println("    --body TEXT         Reply text")
+	fmt.Println("    --body-file PATH    Read reply text from a file (recommended for multiline text)")
 	fmt.Println("    --thread-id ID      Thread ID (optional)")
 	fmt.Println("    --to EMAIL          Override recipient (defaults to original sender)")
 	fmt.Println("    --cc EMAIL          Cc recipients (comma-separated)")
@@ -139,7 +141,8 @@ func printUsage() {
 	fmt.Println("  compose-message        Start a new email thread")
 	fmt.Println("    --to EMAIL          Recipient (required)")
 	fmt.Println("    --subject TEXT      Subject line (required)")
-	fmt.Println("    --body TEXT         Message body (required)")
+	fmt.Println("    --body TEXT         Message body")
+	fmt.Println("    --body-file PATH    Read message body from a file (recommended for multiline text)")
 	fmt.Println("    --cc EMAIL          Cc recipients (comma-separated)")
 	fmt.Println("    --bcc EMAIL         Bcc recipients (comma-separated)")
 	fmt.Println("    --attach PATH       File to attach (repeatable)")
