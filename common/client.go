@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"html"
+	"mime"
 	"net/mail"
 	"regexp"
 	"strings"
@@ -36,11 +37,11 @@ func NewGmailClient() (*GmailClient, error) {
 // ListMessages lists messages with optional query
 func (c *GmailClient) ListMessages(query string, maxResults int64) ([]*gmail.Message, error) {
 	call := c.Service.Users.Messages.List(c.UserID)
-	
+
 	if query != "" {
 		call.Q(query)
 	}
-	
+
 	if maxResults > 0 {
 		call.MaxResults(maxResults)
 	}
@@ -268,7 +269,7 @@ func (c *GmailClient) ModifyMessage(messageID string, addLabels, removeLabels []
 		AddLabelIds:    addLabels,
 		RemoveLabelIds: removeLabels,
 	}
-	
+
 	msg, err := c.Service.Users.Messages.Modify(c.UserID, messageID, modReq).Do()
 	if err != nil {
 		return nil, fmt.Errorf("unable to modify message: %v", err)
@@ -291,7 +292,7 @@ func (c *GmailClient) ModifyThread(threadID string, addLabels, removeLabels []st
 		AddLabelIds:    addLabels,
 		RemoveLabelIds: removeLabels,
 	}
-	
+
 	thread, err := c.Service.Users.Threads.Modify(c.UserID, threadID, modReq).Do()
 	if err != nil {
 		return nil, fmt.Errorf("unable to modify thread: %v", err)
@@ -386,7 +387,13 @@ func ExtractHeaders(msg *gmail.Message) map[string]string {
 		switch strings.ToLower(header.Name) {
 		case "from", "to", "cc", "bcc", "reply-to", "delivered-to",
 			"subject", "date", "message-id", "in-reply-to", "references":
-			headers[strings.ToLower(header.Name)] = header.Value
+			value := header.Value
+			if strings.EqualFold(header.Name, "subject") {
+				if decoded, err := new(mime.WordDecoder).DecodeHeader(value); err == nil {
+					value = decoded
+				}
+			}
+			headers[strings.ToLower(header.Name)] = value
 		}
 	}
 

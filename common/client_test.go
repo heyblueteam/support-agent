@@ -1,6 +1,22 @@
 package common
 
-import "testing"
+import (
+	"testing"
+
+	"google.golang.org/api/gmail/v1"
+)
+
+func TestExtractHeadersDecodesMIMEEncodedSubject(t *testing.T) {
+	msg := &gmail.Message{Payload: &gmail.MessagePart{Headers: []*gmail.MessagePartHeader{
+		{Name: "Subject", Value: "=?UTF-8?Q?Automation_Issue_=E2=80=93_TestLauncher?="},
+	}}}
+
+	got := ExtractHeaders(msg)["subject"]
+	const want = "Automation Issue – TestLauncher"
+	if got != want {
+		t.Fatalf("ExtractHeaders() subject = %q, want %q", got, want)
+	}
+}
 
 // IsInternalAddress decides who a reply is addressed to: an address wrongly
 // judged internal is skipped as a recipient, and one wrongly judged external
