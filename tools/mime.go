@@ -61,7 +61,11 @@ func (m *MIMEMessage) Build() (string, error) {
 	if m.Bcc != "" {
 		fmt.Fprintf(&buf, "Bcc: %s\r\n", m.Bcc)
 	}
-	fmt.Fprintf(&buf, "Subject: %s\r\n", m.Subject)
+	// RFC 5322 headers are ASCII. Gmail accepts raw UTF-8 in some cases, but
+	// clients that parse the message as a legacy 8-bit header will mojibake it
+	// (for example, an en dash becomes "Ã¢Â€Â“"). Encode non-ASCII subjects as
+	// RFC 2047 encoded-words so every mail client sees the same text.
+	fmt.Fprintf(&buf, "Subject: %s\r\n", mime.QEncoding.Encode("UTF-8", m.Subject))
 	if m.InReplyTo != "" {
 		fmt.Fprintf(&buf, "In-Reply-To: %s\r\n", m.InReplyTo)
 	}
